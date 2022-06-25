@@ -118,8 +118,17 @@ async function go() {
 function handle_lnlink(data)
 {
 	const decoded = decode_link_data(data)
-	console.log(decoded)
-	document.querySelector("#content").innerHTML = data
+	const el = document.querySelector("#content") 
+	el.innerHTML = render_lnlink({data: decoded})
+}
+
+function render_lnlink(state)
+{
+	return `
+	<pre>
+	${JSON.stringify(state.data, null, 2)}
+	</pre>
+	`
 }
 
 function handle_form(state)
@@ -139,6 +148,14 @@ function input_changed(state, ev)
 		break
 	case "rune":
 		ok = rune_changed(state, ev)
+		break
+	case "product":
+		state.product = ev.target.value
+		ok = true
+		break
+	case "price":
+		state.price = ev.target.value
+		ok = true
 		break
 	}
 
@@ -174,24 +191,47 @@ function tagged_string(tag, str)
 const TAG_NODEID = 1
 const TAG_IP = 2
 const TAG_RUNE = 3
-const NUM_TAGS = 3
+const TAG_PRODUCT = 4
+const TAG_PRICE = 5
+const NUM_TAGS = 5
+const ALL_TAGS = (function() {
+	let a = []
+	for (let i = 1; i <= NUM_TAGS; i++) {
+		a.push(i)
+	}
+	return a
+})()
 
 function tag_name(tag)
 {
 	switch (tag) {
 	case TAG_NODEID: return 'nodeid'
-	case TAG_RUNE: return 'rune'
 	case TAG_IP: return 'ip'
+	case TAG_RUNE: return 'rune'
+	case TAG_PRODUCT: return 'product'
+	case TAG_PRICE: return 'price'
 	}
 	throw new Error(`invalid tag: ${tag}`)
+}
+
+function name_to_tag(name) {
+	switch (name) {
+	case "nodeid": return TAG_NODEID
+	case "ip": return TAG_IP
+	case "rune": return TAG_RUNE
+	case "product": return TAG_PRODUCT
+	case "price": return TAG_PRICE
+	}
 }
 
 function tag_type(tag)
 {
 	switch (tag) {
 	case TAG_NODEID: return 'array'
-	case TAG_RUNE: return 'array'
 	case TAG_IP: return 'string'
+	case TAG_RUNE: return 'array'
+	case TAG_PRODUCT: return 'string'
+	case TAG_PRICE: return 'string'
 	}
 	throw new Error(`invalid tag: ${tag}`)
 }
@@ -239,6 +279,34 @@ function parse_string_packet(state)
 	return null
 }
 
+function hex_char(val)
+{
+	if (val < 10)
+		return String.fromCharCode(48 + val)
+	if (val < 16)
+		return String.fromCharCode(97 + val - 10)
+}
+
+function hex_encode(buf)
+{
+	str = ""
+	for (let i = 0; i < buf.byteLength; i++) {
+		const c = buf[i]
+		str += hex_char(c >> 4)
+		str += hex_char(c & 0xF)
+	}
+	return str
+}
+
+function post_process_packet(tag, pkt)
+{
+	switch (tag) {
+	case TAG_NODEID: return hex_encode(pkt)
+	case TAG_RUNE:   return base64_encode(pkt)
+	}
+	return pkt
+}
+
 function parse_link_packet(state)
 {
 	const tag = parse_tag(state)
@@ -260,7 +328,7 @@ function parse_link_packet(state)
 		throw new Error(`invalid tag type: ${ttype}`)
 	}
 
-	state.data[tag_name(tag)] = pkt
+	state.data[tag_name(tag)] = post_process_packet(tag, pkt)
 	return true
 }
 
@@ -277,11 +345,7 @@ function parse_link_data(buf)
 function decode_link_data(data)
 {
 	try {
-		const raw_str = atob(data)
-		let buf = new Uint8Array(raw_str.length)
-		for (let i = 0; i < raw_str.length; i++) {
-			buf[i] = raw_str.charCodeAt(i)
-		}
+		const buf = base64_decode(data)
 		return parse_link_data(buf)
 	} catch(e) {
 		console.log(e)
@@ -292,24 +356,26 @@ function decode_link_data(data)
 
 function encode_link_data(state)
 {
-	let tvs = []
-	if (state.nodeid) {
-		const b = tagged_array(TAG_NODEID, state.nodeid)
-		tvs.push(b)
-	}
-
-	if (state.ip) {
-		const b = tagged_string(TAG_IP, state.ip)
-		tvs.push(b)
-	}
-
-	if (state.rune) {
-		const runebuf = tagged_array(TAG_RUNE, state.rune)
-		tvs.push(runebuf)
-	}
+	const tvs = ALL_TAGS.reduce((acc, tag) => {
+		const name = tag_name(tag)
+		const val = state[name]
+		if (val) {
+			let tv
+			switch (tag_type(tag)) {
+			case 'string':
+				tv = tagged_string(tag, val)
+				break
+			case 'array':
+				tv = tagged_array(tag, val)
+				break
+			}
+			acc.push(tv)
+		}
+		return acc
+	}, []);
 
 	const buf = concat_buffers(tvs)
-	return btoa(String.fromCharCode.apply(null, buf));
+	return base64_encode(buf)
 }
 
 function update_link(state) {
@@ -342,19 +408,30 @@ function concat_buffers(bufs) {
 	return big
 }
 
+function base64_encode(buf) {
+	return btoa(String.fromCharCode.apply(null, buf))
+		.replace(/[+]/g, '-')
+		.replace(/[/]/g, '_')
+}
+
+function base64_decode(str) {
+	const decoded = atob(str.replace(/-/g, '+').replace(/_/g, '/'))
+	let buf = new Uint8Array(decoded.length)
+	for (let i = 0; i < decoded.length; i++) {
+		buf[i] = decoded.charCodeAt(i)
+	}
+	return buf
+}
+
+
 function rune_changed(state, ev)
 {
 	const rune_str = ev.target.value
 	try {
-		const rune = atob(rune_str)
-		let buf = new Uint8Array(rune.length)
-		for (let i = 0; i < rune.length; i++) {
-			buf[i] = rune.charCodeAt(i)
-		}
-
-		state.rune = buf
+		state.rune = base64_decode(rune_str)
 		return true
-	} catch {
+	} catch(e) {
+		console.log(e)
 		return false
 	}
 }
@@ -364,7 +441,6 @@ function address_changed(state, ev)
 	const address = ev.target.value
 	const [nodeid, ip] = address.split("@")
 	const raw = hex_decode(nodeid)
-	console.log(nodeid,ip)
 	if (!raw)
 		return false
 	state.nodeid = raw
