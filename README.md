@@ -11,6 +11,7 @@ Serverless payment links for [Core-Lightning](https://github.com/ElementsProject
 
   - nodeid
   - ip
+  - authentication rune (invoice, waitinvoice)
   - product name
   - description
   - price
