@@ -1285,3 +1285,7 @@ input[type="button"].btn-block {
 .affix {
   position: fixed;
 }
+
+#qrcode {
+	margin: 20px;
+}

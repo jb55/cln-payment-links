@@ -4,8 +4,9 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgo=">
 
-        <title>Hello World</title>
+        <title>Lightning Payment</title>
 	<link href="style.css" rel="stylesheet"/>
 <style>
 	#content {
@@ -28,13 +29,13 @@
 </style>
     </head>
     <body>
-	<section id="content">
+	<section style="display:none" id="content">
 	<img id="logo" src="https://lnlink.app/logo.svg" >
         <h1>Create a Lightning Payment Link</h1>
 	<div id="form">
 	  <div class="form-group">
 	    <label for="node_address">Node Address</label>
-	    <input class="form-control" id="node_address" placeholder="03f3c108ccd536b8526841f0a5c58212bb9e6583a1eb493080e7c1cc14f82dad71@255.123.145.123:4242">
+	    <input class="form-control" id="ip" placeholder="03f3c108ccd536b8526841f0a5c58212bb9e6583a1eb493080e7c1cc14f82dad71@255.123.145.123:4242">
 	  </div>
 	  <div class="form-group">
 	    <label for="rune_input">Rune (invoice + waitinvoice)</label>
@@ -43,6 +44,10 @@
 	  <div class="form-group">
 	    <label for="product">Product Name</label>
 	    <input class="form-control" id="product" placeholder="Widget">
+	  </div>
+	  <div class="form-group">
+	    <label for="product">Description</label>
+	    <textarea class="form-control" id="description" placeholder="A supreme widget made from an indestructible alloy"></textarea>
 	  </div>
 	  <div class="form-group">
 	    <label for="price">Price (sats)</label>
@@ -59,12 +64,13 @@
 	      <label class="form-check-label" for="address">Address</label>
 	    </div>
 	  </div>
-	    <a href="http://lnlink.org/#" id="link">http://lnlink.org/#</a>
+	    <a href="#" target="_blank" id="link">Link</a>
 	</div>
 	</section>
 	
     <script src="lnsocket.js"></script>
-    <script src="index.js?v=2"></script>
+    <script src="qrcode.js"></script>
+    <script src="index.js?v=3"></script>
     </body>
 </html>
 
