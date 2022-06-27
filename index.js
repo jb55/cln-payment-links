@@ -59,9 +59,10 @@ function slugify(str)
 
 function make_description({data})
 {
-	const {fields, description} = data
+	const {fields, description, product} = data
+	const base = `1x ${product}\n${description}`
 	if (!fields) {
-		return description
+		return base
 	}
 
 	return Object.keys(FIELDS_BITS).reduce((desc, name) => {
@@ -70,7 +71,7 @@ function make_description({data})
 		if (val && (FIELDS_BITS[name] & fields))
 			desc += `\n${name}: "${val}"`
 		return desc
-	}, `${description}\n`)
+	}, `${base}\n`)
 }
 
 async function click_buy_button()
@@ -536,9 +537,11 @@ function update_link(state) {
 	const el = document.querySelector("#link")
 	const host = window.location.host
 	const scheme = window.location.protocol
-	const params = get_qs()
+	const url = new URL(document.location)
+	const params = url.searchParams
 	const edit = +params.get("edit") === 1 ? `&edit=1` : ""
-	const link = `${scheme}//${host}/?d=${dat}`
+
+	const link = `${scheme}//${host}${url.pathname}?d=${dat}`
 
 	el.href = link
 	el.text = link
