@@ -17,7 +17,7 @@ Serverless payment links for [Core-Lightning](https://github.com/ElementsProject
   - price
   - form input fields
 
-* When the user clicks buy, it connects to the configured lightning node and calls the `invoice` rpc via the commando plugin (soon to build a CLN built-in). This is considered a "lightning app" since it is serverless and talks to lightning nodes directly.
+* When the user clicks buy, it connects to the configured lightning node and calls the `invoice` rpc via the commando plugin (soon to build a CLN built-in). This is considered a "lightning app" since it is serverless and talks to lightning nodes directly. `experimental-websocket-port=8324` needs to be set in your config for websockets access.
 
 * A bolt11 invoice is returned with the configured price, and the description is set to the product name, description, and form input fields
 
