@@ -240,6 +240,8 @@ function handle_form(state)
 const FIELDS_BITS = {
 	email: 1 << 0,
 	address: 1 << 1,
+	name: 1 << 2,
+	phone: 1 << 3,
 }
 
 function fields_changed(state, field, checked)
@@ -264,13 +266,12 @@ function input_changed(state, ev)
 	case "rune":
 		ok = rune_changed(state, ev.target.value)
 		break
-
-	case "email":
-	case "address":
-		fields_changed(state, ev.target.id, ev.target.checked)
-		ok = true
-		break
 	default:
+		// fields
+		if (Object.keys(FIELDS_BITS).some(x => x === ev.target.id)) {
+			fields_changed(state, ev.target.id, ev.target.checked)
+			ok = true
+		}
 		state[ev.target.id] = ev.target.value
 		ok = true
 	}
