@@ -3,7 +3,7 @@
 
 Serverless payment links for [Core-Lightning](https://github.com/ElementsProject/lightning)
 
-[http://lnlink.org](lnlink.org)
+[lnlink.org](http://lnlink.org)
 
 ## How it works
 
