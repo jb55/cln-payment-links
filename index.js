@@ -31,11 +31,11 @@ async function make_request({nodeid, address, method, rune, params}) {
 }
 
 
-function make_invoice({nodeid, label, address, rune, description, msatoshi}) {
+function make_invoice({nodeid, label, address, rune, description, amount_msat}) {
 	return make_request({
 		method: "invoice",
 		nodeid, address, rune, 
-		params: { label, msatoshi, description }
+		params: { label, amount_msat, description }
 	})
 }
 
@@ -87,7 +87,7 @@ async function click_buy_button()
 		rune: base64_encode(data.rune),
 		description: description,
 		address: "ws://" + data.ip,
-		msatoshi: (+data.price) * 1000,
+		amount_msat: (+data.price) * 1000,
 	})
 
 	if (!(res && res.result)) {
