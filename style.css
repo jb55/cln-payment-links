@@ -52,6 +52,15 @@ a:active,
 a:hover {
   outline: 0;
 }
+
+details {
+	padding: 10px;
+	margin: 10px 0 10px 0;
+	background-color: #eee;
+	border-radius: 10px;
+}
+
+
 abbr[title] {
   border-bottom: none;
   text-decoration: underline;
@@ -1288,4 +1297,20 @@ input[type="button"].btn-block {
 
 #qrcode {
 	margin: 20px;
+}
+
+#qr-container {
+	display: flex;
+	align-items: center;
+	flex-direction: column;
+	justify-content: center;
+}
+
+#qr-container img {
+	width: 250px;
+	height: 250px;
+}
+
+.success {
+	color: rgb(93,158,82);
 }

@@ -7,7 +7,7 @@
 	<link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgo=">
 
         <title>Lightning Payment</title>
-	<link href="style.css" rel="stylesheet"/>
+	<link href="style.css?v=2" rel="stylesheet"/>
 <style>
 	#content {
 		margin: auto;
@@ -34,11 +34,24 @@
         <h1>Create a Lightning Payment Link</h1>
 	<div id="form">
 	  <div class="form-group">
+		<p>
+		<a href="/?d=ASED88EIzNU2uFJoQfClxYISu55lhKHrSTCA58HMNPgtrXECMjQuODQuMTUyLjE4Nzo4MzI0AANgB6Cj2QCeZAFOZ1nS6qGuRe4Vf6qzwJyQ5Qo3b0HRt_w9MTIwJm1ldGhvZD1pbnZvaWNlfG1ldGhvZD13YWl0aW52b2ljZSZwbmFtZWxhYmVsXmxubGluay0mcmF0ZT04BERlYXRoIFN0YXIABQAAAGQGQW4gb2JqZWN0IG9mIHVuZmF0aG9tYWJsZSBwb3dlcgAHDA==&edit=1">Load Example</a>
+		</p>
 	    <label for="node_address">Node Address</label>
+	    <details>
+		    <summary style="cursor:pointer">How to get this</summary>
+		    <p>Enter this command on your node to get your node's connection information</p>
+		    <textarea readonly style="width:100%; ">lightning-cli -F getinfo | grep '^\(id\|address\[0\]\.\(address\|port\)\)' | cut -d= -f2- | tr '\n' ' ' | (read -r ID ADDR PORT; echo "$ID@${ADDR}:$PORT")</textarea>
+</details>
 	    <input class="form-control" id="ip" placeholder="03f3c108ccd536b8526841f0a5c58212bb9e6583a1eb493080e7c1cc14f82dad71@255.123.145.123:4242">
 	  </div>
 	  <div class="form-group">
 	    <label for="rune_input">Rune (invoice + waitinvoice)</label>
+	    <details>
+		    <summary style="cursor:pointer">How to get this</summary>
+		    <p>Enter this command on your node to get an auth rune with the appropriate permissions</p>
+		    <textarea readonly style="width:100%">lightning-cli commando-rune restrictions='["method=invoice|method=waitinvoice","pnamelabel^lnlink-","rate=20"]'</textarea>
+	    </details>
 	    <input class="form-control" id="rune" placeholder="pqQVIJ5J9Vf9O5CfSKs_0c2imIU7oOBzykGNkjgA2uQ9MjEmbWV0aG9kPWdldGluZm8mdGltZTwxNjU2MTAzNjg5">
 	  </div>
 	  <div class="form-group">
@@ -72,16 +85,19 @@
 	      <label class="form-check-label" for="name">Name</label>
 	    </div>
 	  </div>
+	  <h2>Payment Page Link</h2>
 	    <a href="#" target="_blank" id="link">Link</a>
+	  <h2>Edit Link</h2>
+	    <a href="#" target="_blank" id="edit-link">Edit Link</a>
 	</div>
 	<center>
 	<p style="margin-top: 50px">lnlink.org is open source! <a target="_blank" href="https://github.com/jb55/lnlink.org">fork us on github</a></p>
 	</center>
 	</section>
 	
-    <script src="lnsocket.js?v=2"></script>
+    <script src="lnsocket.js?v=4"></script>
     <script src="qrcode.js"></script>
-    <script src="index.js?v=7"></script>
+    <script src="index.js?v=15"></script>
     </body>
 </html>
 

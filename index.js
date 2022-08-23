@@ -17,13 +17,14 @@ async function go() {
 	}
 }
 
-async function make_request({nodeid, address, method, rune, params}) {
+async function make_request(method, auth, params) {
 	const LNSocket = await lnsocket_init()
 	const ln = LNSocket()
 
 	ln.genkey()
-	await ln.connect_and_init(nodeid, address)
+	await ln.connect_and_init(auth.nodeid, auth.address)
 
+	const rune = auth.rune
 	const res = await ln.rpc({ rune, method, params })
 
 	ln.disconnect()
@@ -31,12 +32,10 @@ async function make_request({nodeid, address, method, rune, params}) {
 }
 
 
-function make_invoice({nodeid, label, address, rune, description, amount_msat}) {
-	return make_request({
-		method: "invoice",
-		nodeid, address, rune, 
-		params: { label, amount_msat, description }
-	})
+function make_invoice(auth, params) {
+	// 20m
+	params.expiry = params.expiry || (Math.floor(new Date().getTime() / 1000) + 60 * 20)
+	return make_request("invoice", auth, params)
 }
 
 function get_qs() {
@@ -74,38 +73,72 @@ function make_description({data})
 	}, `${base}\n`)
 }
 
+function get_product_name(p)
+{
+	return p || "For Sale!"
+}
+
 async function click_buy_button()
 {
 	const {data} = STATE
-	const label = `lnlink-${slugify(data.product)}-${new Date().getTime()}`
+	const product = get_product_name(data.product)
+	const label = `lnlink-${slugify(product)}-${new Date().getTime()}`
 
 	const description = make_description(STATE)
+	const amount_msat = data.price == null ? "any" : (+data.price) * 1000
 
-	const res = await make_invoice({
-		nodeid: hex_encode(data.nodeid),
-		label: label,
-		rune: base64_encode(data.rune),
-		description: description,
-		address: "ws://" + data.ip,
-		amount_msat: (+data.price) * 1000,
-	})
+	try {
+		const auth = {
+			address: "ws://" + data.ip,
+			nodeid: hex_encode(data.nodeid),
+			rune: base64_encode(data.rune),
+		}
+		const res = await make_invoice(auth, { 
+			label, description, amount_msat
+		})
 
-	if (!(res && res.result)) {
-		show_error(res)
-		return
+		if (!(res && res.result)) {
+			show_error(res)
+			return
+		}
+
+		make_qrcode(res.result)
+		const input_form = document.querySelector("#input-form")
+		input_form.style.display = "none"
+
+		await wait_for_invoice(auth, label)
+
+		const qr = document.querySelector("#qr-container")
+		await spin_animation(qr)
+		qr.innerHTML = `
+			<img src="check.svg"/>
+			<h2 class="success">Payment Success!</h2>
+		`
+
+	} catch (err) {
+		show_error(err)
 	}
 
-	make_qrcode(res.result)
+}
+
+async function spin_animation(el) 
+{
+	el.style.transition = "all ease 0.8s";
+	el.style.transform = "rotate(360deg) scale(0.00)";
+	await sleep(800)
+	el.style.transform = "scale(1.0)";
 }
 
 function show_error(err)
 {
+	err = (err && JSON.stringify(err)) || "An Unknown Error Occurred"
 	const el = document.querySelector("#qrcode")
 	el.innerHTML = `
 	<p>Oh no :( there was a problem. Please try again</p>
 	<pre>${err}</pre>
 	`
 }
+
 
 function make_qrcode(invoice)
 {
@@ -160,25 +193,29 @@ function render_lnlink(state)
 {
 
 	const data = state.data
-	const product = data.product || "For Sale!"
-	const sats = +data.price
+	const product = get_product_name(data.product)
+	const sats = data.price == null ? "any" : +data.price
 	const ending = sats === 1 ? "sat" : "sats"
-	const price = format_amount(+data.price) + " " + ending
+	const price = sats === "any" ? "any" : (format_amount(sats) + " " + ending)
 
 	return `
 	<div id="card">
-	<h3>${data.product}</h3>
+	<h3>${product}</h3>
 	  <p>${data.description}</p>
 	  <h1>${price}</h1>
 
-          ${render_input_form(data.fields)}
+	  <div id="input-form">
+		  ${render_input_form(data.fields)}
 
-	  <button type="button" class="btn btn-primary" onclick="click_buy_button()">Buy</button>
+		  <button type="button" class="btn btn-primary" onclick="click_buy_button()">Buy</button>
+	  </div>
 
-	  <a id="qrcode-link" href="#">
-		  <div id="qrcode">
-		  </div>
-	  </a>
+	  <div id="qr-container">
+		  <a id="qrcode-link" href="#">
+			  <div id="qrcode">
+			  </div>
+		  </a>
+	  </div>
 	</div>
 	`
 }
@@ -426,6 +463,22 @@ function hex_char(val)
 		return String.fromCharCode(97 + val - 10)
 }
 
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function wait_for_invoice(auth, label) {
+	while (true) {
+		try {
+			await make_request("waitinvoice", auth, {label})
+			return
+		} catch {
+			console.log("disconnected... trying waitinvoice again")
+		}
+	}
+}
+
+
 function hex_encode(buf)
 {
 	str = ""
@@ -535,6 +588,7 @@ function encode_link_data(state)
 function update_link(state) {
 	const dat = encode_link_data(state)
 	const el = document.querySelector("#link")
+	const edit_el = document.querySelector("#edit-link")
 	const host = window.location.host
 	const scheme = window.location.protocol
 	const url = new URL(document.location)
@@ -542,9 +596,13 @@ function update_link(state) {
 	const edit = +params.get("edit") === 1 ? `&edit=1` : ""
 
 	const link = `${scheme}//${host}${url.pathname}?d=${dat}`
+	const edit_link = `${link}&edit=1`
 
 	el.href = link
 	el.text = link
+
+	edit_el.href = edit_link
+	edit_el.text = edit_link
 
 	window.history.replaceState({}, '', link + edit)
 }
