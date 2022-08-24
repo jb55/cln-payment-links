@@ -80,11 +80,18 @@ function get_product_name(p)
 	return p || "For Sale!"
 }
 
+
+function uuidv4() {
+  return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
+    (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
+  );
+}
+
 async function click_buy_button()
 {
 	const {data} = STATE
 	const product = get_product_name(data.product)
-	const label = `lnlink-${slugify(product)}-${new Date().getTime()}`
+	const label = `lnlink-${uuidv4()}`
 
 	const description = make_description(STATE)
 	const prefix = location.protocol === "https:" ? "wss://" : "ws://"
@@ -125,6 +132,7 @@ async function click_buy_button()
 		qr.innerHTML = `
 			<img src="check.svg"/>
 			<h2 class="success">Payment Success!</h2>
+			<p>Invoice ID: ${label}</p>
 		`
 
 	} catch (err) {
