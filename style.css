@@ -1318,3 +1318,22 @@ input[type="button"].btn-block {
 .error {
 	color: red;
 }
+
+#content {
+	margin: auto;
+	padding: 20px;
+	max-width: 800px;
+}
+
+#logo {
+	border-radius: 20%;
+	height: 64px;
+	width: 64px;
+	float: left;
+	margin-right: 20px;
+}
+
+#form {
+	margin-top: 50px;
+	clear: left;
+}
