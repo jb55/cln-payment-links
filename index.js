@@ -17,8 +17,10 @@ async function go() {
 	}
 }
 
+const LNSocket_ready = lnsocket_init()
+
 async function make_request(method, auth, params) {
-	const LNSocket = await lnsocket_init()
+	const LNSocket = await LNSocket_ready
 	const ln = LNSocket()
 
 	ln.genkey()
