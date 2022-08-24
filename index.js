@@ -87,11 +87,12 @@ async function click_buy_button()
 	const label = `lnlink-${slugify(product)}-${new Date().getTime()}`
 
 	const description = make_description(STATE)
+	const prefix = location.protocol === "https:" ? "wss://" : "ws://"
 	const amount_msat = data.price == null ? "any" : (+data.price) * 1000
 
 	try {
 		const auth = {
-			address: "ws://" + data.ip,
+			address: prefix + data.ip,
 			nodeid: hex_encode(data.nodeid),
 			rune: base64_encode(data.rune),
 		}
