@@ -109,9 +109,18 @@ async function click_buy_button()
 		const input_form = document.querySelector("#input-form")
 		input_form.style.display = "none"
 
-		await wait_for_invoice(auth, label)
+		const wait_res = await wait_for_invoice(auth, label)
 
 		const qr = document.querySelector("#qr-container")
+
+		if (wait_res.error) {
+			qr.innerHTML = `
+				<h2 class="error">Payment Error!</h2>
+				<p class="error">${JSON.stringify(wait_res.error)}</p>
+			`
+			return
+		}
+
 		await spin_animation(qr)
 		qr.innerHTML = `
 			<img src="check.svg"/>
@@ -473,8 +482,8 @@ function sleep(ms) {
 async function wait_for_invoice(auth, label) {
 	while (true) {
 		try {
-			await make_request("waitinvoice", auth, {label})
-			return
+			const res = await make_request("waitinvoice", auth, {label})
+			return res
 		} catch {
 			console.log("disconnected... trying waitinvoice again")
 		}

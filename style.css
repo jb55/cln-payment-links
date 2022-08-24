@@ -1314,3 +1314,7 @@ input[type="button"].btn-block {
 .success {
 	color: rgb(93,158,82);
 }
+
+.error {
+	color: red;
+}
