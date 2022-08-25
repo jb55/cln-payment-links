@@ -26,12 +26,3 @@ Serverless payment links for [Core-Lightning](https://github.com/ElementsProject
 ## What's next?
 
 You'll need a way to manage your lightning node to view paid invoices. Ideally there would be an iOS and web app that talks directly to your lightning node to do this. [Follow me on twitter](https://twitter.com/jb55) for updates on this.
-
-## Demo
-
-[Product page](http://lnlink.org/?d=ASED88EIzNU2uFJoQfClxYISu55lhKHrSTCA58HMNPgtrXECMjQuODQuMTUyLjE4Nzo4MzI0AAMy9mAbVmCjk_SvLXMw8DJp_7x0ymhmhgmlKR7ipmND7nk9MjcmbWV0aG9kPWludm9pY2UERGVhdGggU3RhcgAFAAAAZAZBbiBvYmplY3Qgb2YgdW5mYXRob21hYmxlIHBvd2VyAAcM)
-
-The editor (just add `&edit=1` at the end of the url)
-
-[Editor](http://lnlink.org/?d=ASED88EIzNU2uFJoQfClxYISu55lhKHrSTCA58HMNPgtrXECMjQuODQuMTUyLjE4Nzo4MzI0AAMy9mAbVmCjk_SvLXMw8DJp_7x0ymhmhgmlKR7ipmND7nk9MjcmbWV0aG9kPWludm9pY2UERGVhdGggU3RhcgAFAAAAZAZBbiBvYmplY3Qgb2YgdW5mYXRob21hYmxlIHBvd2VyAAcM&edit=1)
-
