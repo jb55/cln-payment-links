@@ -218,11 +218,14 @@ function render_lnlink(state)
 	const ending = sats === 1 ? "sat" : "sats"
 	const price = sats === "any" ? "any" : (format_amount(sats) + " " + ending)
 
+	const img = data.image ? `<img id="product-image" src="${data.image}" />` : ""
+
 	return `
 	<div id="card">
 	<h3>${product}</h3>
 	  <p>${data.description}</p>
 	  <h1>${price}</h1>
+	  ${img}
 
 	  <div id="input-form">
 		  ${render_input_form(data.fields)}
@@ -300,6 +303,7 @@ const FIELDS_BITS = {
 	address: 1 << 1,
 	name: 1 << 2,
 	phone: 1 << 3,
+	nostrAddress: 1 << 4,
 }
 
 function fields_changed(state, field, checked)
@@ -387,7 +391,8 @@ const TAG_PRODUCT = 4
 const TAG_PRICE = 5
 const TAG_DESCRIPTION = 6
 const TAG_FIELDS = 7
-const NUM_TAGS = 7
+const TAG_IMAGE = 8
+const NUM_TAGS = 8
 const ALL_TAGS = (function() {
 	let a = []
 	for (let i = 1; i <= NUM_TAGS; i++) {
@@ -406,6 +411,7 @@ function tag_name(tag)
 	case TAG_PRICE: return 'price'
 	case TAG_DESCRIPTION: return 'description'
 	case TAG_FIELDS: return 'fields'
+	case TAG_IMAGE: return 'image'
 	}
 	throw new Error(`invalid tag: ${tag}`)
 }
@@ -420,6 +426,7 @@ function tag_type(tag)
 	case TAG_PRICE: return 'u32'
 	case TAG_DESCRIPTION: return 'string'
 	case TAG_FIELDS: return 'u8'
+	case TAG_IMAGE: return 'string'
 	}
 	throw new Error(`invalid tag: ${tag}`)
 }

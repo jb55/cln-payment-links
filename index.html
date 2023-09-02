@@ -40,8 +40,12 @@
 	    <input class="form-control" id="product" placeholder="Widget">
 	  </div>
 	  <div class="form-group">
-	    <label for="product">Description</label>
+	    <label for="description">Description</label>
 	    <textarea class="form-control" id="description" placeholder="A supreme widget made from an indestructible alloy"></textarea>
+	  </div>
+	  <div class="form-group">
+	    <label for="image">Image (URL)</label>
+	    <textarea class="form-control" id="image" placeholder="https://imagehost.com/image.png"></textarea>
 	  </div>
 	  <div class="form-group">
 	    <label for="price">Price (sats)</label>
@@ -52,6 +56,10 @@
 	    <div class="form-check">
 	      <input type="checkbox" class="form-check-input" id="email">
 	      <label class="form-check-label" for="email">Email</label>
+	    </div>
+	    <div class="form-check">
+	      <input type="checkbox" class="form-check-input" id="nostrAddress">
+	      <label class="form-check-label" for="nostrAddress">Nostr Address</label>
 	    </div>
 	    <div class="form-check">
 	      <input type="checkbox" class="form-check-input" id="address">
@@ -75,10 +83,10 @@
 	<p style="margin-top: 50px">lnlink.org is open source! <a target="_blank" href="https://github.com/jb55/lnlink.org">fork us on github</a></p>
 	</center>
 	</section>
-	
-    <script src="lnsocket.js?v=5"></script>
+
+    <script src="lnsocket.js?v=6"></script>
     <script src="qrcode.js"></script>
-    <script src="index.js?v=18"></script>
+    <script src="index.js?v=19"></script>
     </body>
 </html>
 
