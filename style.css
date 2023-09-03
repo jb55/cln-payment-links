@@ -1337,3 +1337,8 @@ input[type="button"].btn-block {
 	margin-top: 50px;
 	clear: left;
 }
+
+.btcprice {
+	float: right;
+	color: lightgray;
+}

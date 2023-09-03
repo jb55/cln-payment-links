@@ -4,14 +4,14 @@ async function go() {
 	const state = {}
 
 	const params = get_qs()
-	const data = params.get("d");
-	const edit = +params.get("edit") === 1;
+	const data = params.get("d")
+	const edit = +params.get("edit") === 1
 
 	if (edit) {
 		const decoded_state = STATE = decode_link_data(data)
 		handle_form(decoded_state)
 	} else if (data) {
-		handle_lnlink(data)
+		await handle_lnlink(data, params)
 	} else {
 		handle_form(state)
 	}
@@ -44,11 +44,12 @@ function get_qs() {
 	return (new URL(document.location)).searchParams;
 }
 
-function handle_lnlink(data)
+async function handle_lnlink(data, params)
 {
-	const decoded = decode_link_data(data)
+	const decoded = decode_link_data(data, params)
 	const el = document.querySelector("#content") 
-	STATE = {data: decoded}
+	const xr = decoded.xr || await fetch_btc_xr()
+	STATE = {data: decoded, xr}
 	el.innerHTML = render_lnlink(STATE)
 	unhide_content()
 }
@@ -60,11 +61,13 @@ function slugify(str)
 
 function make_description({data})
 {
-	const {fields, description, product} = data
-	const base = `1x ${product}\n${description}`
-	if (!fields) {
+	const {fields, description, ordernumber, product} = data
+	let base = ""
+	if (ordernumber)
+		base += `Order ${ordernumber}\n`
+	base += `1x ${product}\n${description}`
+	if (!fields)
 		return base
-	}
 
 	return Object.keys(FIELDS_BITS).reduce((desc, name) => {
 		const el = document.querySelector(`#${name}_input`)
@@ -86,6 +89,27 @@ function uuidv4() {
     (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
   );
 }
+
+
+async function fetch_local_fallback() {
+	const response = await fetch('/rate.txt');
+	const data = await response.text();
+	return parseFloat(data.trim());
+}
+
+async function fetch_btc_xr()
+{
+	try {
+		// can just run a script to update this from anywhere
+		const response = await fetch('/rate.txt');
+		const data = await response.text();
+		return parseFloat(data.trim());
+	} catch {
+		// oof
+		return 30000
+	}
+}
+
 
 async function click_buy_button()
 {
@@ -209,22 +233,50 @@ function render_input_form(fields)
 	`
 }
 
+// we could have a provided fiat price that we need to convert to sats,
+// or a sats price where we can show the fiat equivalent
+//
+// In either case, we will just return both
+function determine_price(state)
+{
+	const fiatInCents = +state.data.fiat;
+	const btcInUsd = state.xr;
+	const satsInUsd = btcInUsd / 100_000_000;
+
+	let fiat = fiatInCents / 100;
+	let sats = +state.data.price;
+
+	if (!fiat && sats) {
+		fiat = sats * satsInUsd;
+	} else if (fiat && !sats) {
+		sats = Math.round(fiat / satsInUsd);
+	} else if (btcInUsd === 0 || (!fiat && !sats)) {
+		fiat = null;
+		sats = null;
+	}
+
+	return { sats, fiat };
+}
+
 function render_lnlink(state)
 {
 
 	const data = state.data
 	const product = get_product_name(data.product)
-	const sats = data.price == null ? "any" : +data.price
+	const {sats, fiat} = determine_price(state)
 	const ending = sats === 1 ? "sat" : "sats"
-	const price = sats === "any" ? "any" : (format_amount(sats) + " " + ending)
+	const price_str = sats == null ? "any" : `${format_amount(sats)} ${ending} ($${fiat.toFixed(2)})`
 
 	const img = data.image ? `<img id="product-image" src="${data.image}" />` : ""
+	const ordernumber = data.ordernumber ? `<h2>Order ${data.ordernumber}` : ``
 
 	return `
 	<div id="card">
+	<span class="btcprice">BTCUSD ${state.xr}</span>
+	${ordernumber}
 	<h3>${product}</h3>
 	  <p>${data.description}</p>
-	  <h1>${price}</h1>
+	  <h1>${price_str}</h1>
 	  ${img}
 
 	  <div id="input-form">
@@ -392,7 +444,9 @@ const TAG_PRICE = 5
 const TAG_DESCRIPTION = 6
 const TAG_FIELDS = 7
 const TAG_IMAGE = 8
-const NUM_TAGS = 8
+const TAG_ORDERNUMBER = 9
+const TAG_FIAT = 10
+const NUM_TAGS = 10
 const ALL_TAGS = (function() {
 	let a = []
 	for (let i = 1; i <= NUM_TAGS; i++) {
@@ -409,11 +463,30 @@ function tag_name(tag)
 	case TAG_RUNE: return 'rune'
 	case TAG_PRODUCT: return 'product'
 	case TAG_PRICE: return 'price'
+	case TAG_FIAT: return 'fiat'
 	case TAG_DESCRIPTION: return 'description'
 	case TAG_FIELDS: return 'fields'
 	case TAG_IMAGE: return 'image'
+	case TAG_ORDERNUMBER: return 'ordernumber'
 	}
 	throw new Error(`invalid tag: ${tag}`)
+}
+
+function tag_name_to_id(name)
+{
+	switch (name) {
+	case 'nodeid': return TAG_NODEID
+	case 'ip': return TAG_IP
+	case 'rune': return TAG_RUNE
+	case 'product': return TAG_PRODUCT
+	case 'price': return TAG_PRICE
+	case 'fiat': return TAG_FIAT
+	case 'description': return TAG_DESCRIPTION
+	case 'fields': return TAG_FIELDS
+	case 'image': return TAG_IMAGE
+	case 'ordernumber': return TAG_ORDERNUMBER
+	}
+	return null
 }
 
 function tag_type(tag)
@@ -427,6 +500,8 @@ function tag_type(tag)
 	case TAG_DESCRIPTION: return 'string'
 	case TAG_FIELDS: return 'u8'
 	case TAG_IMAGE: return 'string'
+	case TAG_ORDERNUMBER: return 'string'
+	case TAG_FIAT: return 'u32'
 	}
 	throw new Error(`invalid tag: ${tag}`)
 }
@@ -560,21 +635,31 @@ function parse_link_packet(state)
 	return true
 }
 
-function parse_link_data(buf)
+function parse_link_data(buf, params)
 {
 	let state = {pos:0, buf, data:{}}
 	while (state.pos < buf.byteLength) {
 		if (!parse_link_packet(state))
 			return null
 	}
+
+	// fill in querystring params for dynamic forms
+	if (params) {
+		for (const [key, value] of params) {
+			if (tag_name_to_id(key) !== 0) {
+				state.data[key] = value
+			}
+		}
+	}
+
 	return state.data
 }
 
-function decode_link_data(data)
+function decode_link_data(data, params)
 {
 	try {
 		const buf = base64_decode(data)
-		return parse_link_data(buf)
+		return parse_link_data(buf, params)
 	} catch(e) {
 		console.log(e)
 		return null
