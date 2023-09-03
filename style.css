@@ -1339,8 +1339,14 @@ input[type="button"].btn-block {
 }
 
 .btcprice {
+	text-align: right;
 	float: right;
 	color: lightgray;
+}
+
+a.light {
+	color: lightgray;
+	text-decoration: underline;
 }
 
 .btn-large {

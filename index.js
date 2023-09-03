@@ -272,7 +272,10 @@ function render_lnlink(state)
 
 	return `
 	<div id="card">
-	<span class="btcprice">BTCUSD ${state.xr}</span>
+	<span class="btcprice">
+		BTCUSD ${state.xr}<br/>
+		<a class="light" href="${window.location}&edit=1">edit</a>
+	</span>
 	${ordernumber}
 	<h3>${product}</h3>
 	  <p>${data.description}</p>
