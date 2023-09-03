@@ -110,7 +110,6 @@ async function fetch_btc_xr()
 	}
 }
 
-
 async function click_buy_button()
 {
 	const {data} = STATE
@@ -123,7 +122,7 @@ async function click_buy_button()
 
 	try {
 		const auth = {
-			address: prefix + data.ip,
+			address: prefix + determine_endpoint(data.ip),
 			nodeid: hex_encode(data.nodeid),
 			rune: base64_encode(data.rune),
 		}
