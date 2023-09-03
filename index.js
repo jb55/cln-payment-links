@@ -265,7 +265,7 @@ function render_lnlink(state)
 	const product = get_product_name(data.product)
 	const {sats, fiat} = determine_price(state)
 	const ending = sats === 1 ? "sat" : "sats"
-	const price_str = sats == null ? "any" : `${format_amount(sats)} ${ending} ($${fiat.toFixed(2)})`
+	const price_str = sats == null ? "Price: You choose!" : `${format_amount(sats)} ${ending} ($${fiat.toFixed(2)})`
 
 	const img = data.image ? `<img id="product-image" src="${data.image}" />` : ""
 	const ordernumber = data.ordernumber ? `<h2>Order ${data.ordernumber}` : ``
@@ -330,7 +330,11 @@ function update_form_from_state(state)
 			var el = document.getElementById(key)
 			if (!el)
 				throw new Error(`no el for state key ${key}`)
-			el.value = state[key]
+			if (key === "fiat") {
+				el.value = state[key] / 100
+			} else {
+				el.value = state[key]
+			}
 		}
 	}
 
@@ -383,6 +387,10 @@ function input_changed(state, ev)
 	case "rune":
 		ok = rune_changed(state, ev.target.value)
 		break
+	case "fiat":
+		state.fiat = parseFloat(ev.target.value) * 100
+		ok = true
+		break;
 	default:
 		// fields
 		if (Object.keys(FIELDS_BITS).some(x => x === ev.target.id)) {
