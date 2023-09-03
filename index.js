@@ -122,7 +122,7 @@ async function click_buy_button()
 
 	try {
 		const auth = {
-			address: prefix + determine_endpoint(data.ip),
+			address: prefix + data.ip,
 			nodeid: hex_encode(data.nodeid),
 			rune: base64_encode(data.rune),
 		}
@@ -248,11 +248,12 @@ function determine_price(state)
 	if (!fiat && sats) {
 		fiat = sats * satsInUsd;
 	} else if (fiat && !sats) {
-		sats = Math.round(fiat / satsInUsd);
+		state.data.price = sats = Math.round(fiat / satsInUsd);
 	} else if (btcInUsd === 0 || (!fiat && !sats)) {
 		fiat = null;
 		sats = null;
 	}
+
 
 	return { sats, fiat };
 }
