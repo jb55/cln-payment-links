@@ -282,7 +282,7 @@ function render_lnlink(state)
 	  <div id="input-form">
 		  ${render_input_form(data.fields)}
 
-		  <button type="button" class="btn btn-primary" onclick="click_buy_button()">Buy</button>
+		  <button type="button" class="btn btn-primary btn-large" onclick="click_buy_button()">Pay</button>
 	  </div>
 
 	  <div id="qr-container">

@@ -1342,3 +1342,12 @@ input[type="button"].btn-block {
 	float: right;
 	color: lightgray;
 }
+
+.btn-large {
+	margin-top: 15px;
+	padding: 10px 30px 10px 30px;
+}
+
+#product-image {
+	border-radius: 10px;
+}
