@@ -115,7 +115,11 @@ async function click_pay_button(el)
 	el.disabled = true
 	const {data} = STATE
 	const product = get_product_name(data.product)
-	const label = `lnlink-${uuidv4()}`
+
+	if (data.ordernumber)
+		const label = `lnlink-${data.ordernumber}-${uuidv4()}`
+	else
+		const label = `lnlink-${uuidv4()}`
 
 	const description = make_description(STATE)
 	const prefix = location.protocol === "https:" ? "wss://" : "ws://"
