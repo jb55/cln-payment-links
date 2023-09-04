@@ -110,8 +110,9 @@ async function fetch_btc_xr()
 	}
 }
 
-async function click_buy_button()
+async function click_pay_button(el)
 {
+	el.disabled = true
 	const {data} = STATE
 	const product = get_product_name(data.product)
 	const label = `lnlink-${uuidv4()}`
@@ -131,6 +132,7 @@ async function click_buy_button()
 		})
 
 		if (!(res && res.result)) {
+			el.disabled = false
 			show_error(res)
 			return
 		}
@@ -159,6 +161,7 @@ async function click_buy_button()
 		`
 
 	} catch (err) {
+		el.disabled = false
 		show_error(err)
 	}
 
@@ -277,7 +280,7 @@ function render_lnlink(state)
 		<a class="light" href="${window.location}&edit=1">edit</a>
 	</span>
 	${ordernumber}
-	<h3>${product}</h3>
+	<h2>${product}</h2>
 	  <p>${data.description}</p>
 	  <h1>${price_str}</h1>
 	  ${img}
@@ -285,7 +288,7 @@ function render_lnlink(state)
 	  <div id="input-form">
 		  ${render_input_form(data.fields)}
 
-		  <button type="button" class="btn btn-primary btn-large" onclick="click_buy_button()">Pay</button>
+		  <button id="paybtn" type="button" class="btn btn-primary btn-large" onclick="click_pay_button(this)">Pay</button>
 	  </div>
 
 	  <div id="qr-container">
