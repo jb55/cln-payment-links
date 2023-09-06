@@ -61,11 +61,13 @@ function slugify(str)
 
 function make_description({data})
 {
-	const {fields, description, ordernumber, product} = data
+	const {fields, description, ordernumber, product, fiat} = data
 	let base = ""
 	if (ordernumber)
 		base += `Order ${ordernumber}\n`
-	base += `1x ${product}\n${description}`
+	if (fiat)
+		base += `Price: ${(fiat / 100).toFixed(2)}\n`
+	base += `${product}\n${description}`
 	if (!fields)
 		return base
 
@@ -116,10 +118,11 @@ async function click_pay_button(el)
 	const {data} = STATE
 	const product = get_product_name(data.product)
 
+	let label
 	if (data.ordernumber)
-		const label = `lnlink-${data.ordernumber}-${uuidv4()}`
+		label = `lnlink-${data.ordernumber}-${uuidv4()}`
 	else
-		const label = `lnlink-${uuidv4()}`
+		label = `lnlink-${uuidv4()}`
 
 	const description = make_description(STATE)
 	const prefix = location.protocol === "https:" ? "wss://" : "ws://"
