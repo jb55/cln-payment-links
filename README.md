@@ -1,5 +1,5 @@
 
-# lnlinks
+# cln-payment-links
 
 Serverless payment links for [Core-Lightning](https://github.com/ElementsProject/lightning)
 
